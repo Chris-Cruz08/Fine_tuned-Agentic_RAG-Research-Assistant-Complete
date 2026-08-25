@@ -6,7 +6,7 @@ load_dotenv()
 from src.rag.query_rewriting import rewrite_query
 from src.rag.query_expansion import expand_query
 
-question = "How does attention work in transformer models?"
+question = "What are the tradeoffs of using LoRA versus full fine-tuning for large language models?"
 
 rewritten = rewrite_query(question)
 print("Rewritten query:", rewritten)

@@ -1,4 +1,10 @@
 from langchain_text_splitters import RecursiveCharacterTextSplitter, MarkdownTextSplitter
+import hashlib
+
+
+def stable_id(text: str) -> int:
+    """Deterministic ID that stays the same across every Python process/run."""
+    return int(hashlib.md5(text.encode()).hexdigest()[:16], 16) % (2**63)
 
 
 def chunk_document(content: str, content_format: str, source_url: str) -> list[dict]:

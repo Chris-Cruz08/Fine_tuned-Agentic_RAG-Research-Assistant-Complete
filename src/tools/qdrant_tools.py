@@ -2,6 +2,7 @@ import os
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
 from src.rag.embeddings import embedding_model
+from src.rag.chunking import stable_id
 
 COLLECTION_NAME = "research_chunks"
 VECTOR_SIZE = 384  # bge-small-en-v1.5 output size
@@ -31,12 +32,12 @@ def store_chunks(chunks: list[dict]) -> dict:
 
     points = []
     for chunk, vector in zip(child_chunks, vectors):
-        points.append(PointStruct(id=hash(chunk["id"]) & 0x7FFFFFFF, vector=vector, payload=chunk))
+        points.append(PointStruct(id=stable_id(chunk["id"]), vector=vector, payload=chunk))
 
     # Parent chunks stored with a zero-vector placeholder — retrieved by ID lookup, not similarity search
     for chunk in parent_chunks:
         points.append(PointStruct(
-            id=hash(chunk["id"]) & 0x7FFFFFFF,
+            id=stable_id(chunk["id"]),
             vector=[0.0] * VECTOR_SIZE,
             payload=chunk,
         ))
