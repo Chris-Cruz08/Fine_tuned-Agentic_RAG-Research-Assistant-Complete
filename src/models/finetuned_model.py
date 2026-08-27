@@ -58,8 +58,8 @@ def generate(model_id: str, system_prompt: str, user_prompt: str, max_new_tokens
         outputs = model.generate(
             **inputs,
             max_new_tokens=max_new_tokens,
-            do_sample=True,
-            temperature=0.3,
+            do_sample=False,
+            #temperature=0.3,
             pad_token_id=tokenizer.eos_token_id,
         )
     response = tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)

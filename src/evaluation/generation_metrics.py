@@ -1,39 +1,37 @@
 import os
-from transformers import pipeline
-from langchain_huggingface import HuggingFacePipeline
+from dotenv import load_dotenv
+from langchain_groq import ChatGroq
 from ragas.llms import LangchainLLMWrapper
 from ragas.embeddings import LangchainEmbeddingsWrapper
+from ragas.run_config import RunConfig
 from ragas import evaluate as ragas_evaluate
-from ragas.metrics import faithfulness, context_precision, answer_relevancy
+from ragas.metrics import faithfulness, context_precision
+from ragas.metrics import AnswerRelevancy
 from ragas import EvaluationDataset
 from datasets import Dataset
 
-from src.models.finetuned_model import load_model
 from src.rag.embeddings import embedding_model
 
+load_dotenv()
+
+answer_relevancy = AnswerRelevancy(strictness=1)
 
 def get_ragas_llm():
-    """Wrap the already-loaded fine-tuned model as a Ragas-compatible judge LLM."""
-    model_id = os.environ["HF_MODEL_ID"]
-    model, tokenizer = load_model(model_id)
-
-    hf_pipeline = pipeline(
-        "text-generation",
-        model=model,
-        tokenizer=tokenizer,
-        max_new_tokens=256,
-        do_sample=False,
+    """Use Groq's free tier (gpt-oss, open-weight) as the fast judge LLM for Ragas."""
+    groq_llm = ChatGroq(
+        model="openai/gpt-oss-120b",
+        api_key=os.environ["GROQ_API_KEY"],
+        temperature=0,
     )
-    langchain_llm = HuggingFacePipeline(pipeline=hf_pipeline)
-    return LangchainLLMWrapper(langchain_llm)
+    return LangchainLLMWrapper(groq_llm)
 
 
 def get_ragas_embeddings():
-    """Wrap the same bge-small embedding model used for retrieval, for Ragas metrics that need embeddings."""
+    """Local open-source embeddings — no need for a cloud call here."""
     return LangchainEmbeddingsWrapper(embedding_model)
 
 
-def evaluate_generation(question: str, answer: str, contexts: list[str]) -> dict:
+def evaluate_generation(question: str, answer: str, contexts: list[str], reference: str) -> dict:
     """Run Ragas faithfulness, context precision, and answer relevancy on one Q/A pair."""
     ragas_llm = get_ragas_llm()
     ragas_embeddings = get_ragas_embeddings()
@@ -42,6 +40,7 @@ def evaluate_generation(question: str, answer: str, contexts: list[str]) -> dict
         "user_input": [question],
         "response": [answer],
         "retrieved_contexts": [contexts],
+        "reference": [reference],
     })
     eval_dataset = EvaluationDataset.from_hf_dataset(dataset)
 
@@ -50,6 +49,7 @@ def evaluate_generation(question: str, answer: str, contexts: list[str]) -> dict
         metrics=[faithfulness, context_precision, answer_relevancy],
         llm=ragas_llm,
         embeddings=ragas_embeddings,
+        run_config=RunConfig(timeout=120, max_retries=2, max_workers=1),
     )
 
     return results.to_pandas().iloc[0].to_dict()

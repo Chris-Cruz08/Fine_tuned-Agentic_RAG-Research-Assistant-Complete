@@ -22,3 +22,7 @@ class ResearchState(TypedDict):
     current_agent: str
     error: Optional[str]
     retry_count: int
+
+    use_query_expansion: bool
+    use_reranking: bool
+    use_hierarchical_chunking: bool
