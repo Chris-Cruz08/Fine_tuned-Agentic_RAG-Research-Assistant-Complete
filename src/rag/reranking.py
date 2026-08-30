@@ -1,4 +1,5 @@
 from sentence_transformers import CrossEncoder
+from langsmith import traceable
 
 _reranker = None
 
@@ -10,7 +11,7 @@ def get_reranker():
         _reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2", device="cpu")
     return _reranker
 
-
+@traceable(name="cross_encoder_rerank", run_type="tool")
 def rerank(query: str, chunks: list[dict], top_n: int = 5) -> list[dict]:
     """Re-score top chunks against the query using a cross-encoder, return top_n."""
     if not chunks:

@@ -3,6 +3,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from peft import PeftModel
 from dotenv import load_dotenv
+from langsmith import traceable
 
 load_dotenv()
 
@@ -41,6 +42,8 @@ def load_model(adapter_id: str):
     return model, tokenizer
 
 
+
+@traceable(name="finetuned_model_generate", run_type="llm")
 def generate(model_id: str, system_prompt: str, user_prompt: str, max_new_tokens: int = 512) -> str:
     """Run a chat-style generation with thinking mode disabled."""
     model, tokenizer = load_model(model_id)

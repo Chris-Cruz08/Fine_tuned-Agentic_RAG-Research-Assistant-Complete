@@ -1,8 +1,9 @@
 from src.tools.qdrant_tools import client, COLLECTION_NAME
 from src.rag.embeddings import embedding_model
 from src.rag.chunking import stable_id
+from langsmith import traceable
 
-
+@traceable(name="retrieve_children", run_type="retriever")
 def retrieve_children(query: str, top_k: int = 20) -> list[dict]:
     """Retrieve top_k child chunks from Qdrant for a single query, ranked by similarity."""
     query_vector = embedding_model.embed_query(query)

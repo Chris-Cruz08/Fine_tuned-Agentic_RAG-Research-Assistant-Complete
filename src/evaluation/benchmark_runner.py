@@ -6,6 +6,12 @@ from src.rag.query_rewriting import rewrite_query
 from src.rag.query_expansion import expand_query
 from src.rag.rrf import reciprocal_rank_fusion
 from src.rag.reranking import rerank
+import mlflow
+from datetime import datetime, timezone
+
+def sanitize_metric_name(name: str) -> str:
+    """MLflow metric names can't contain '@' — replace with '_at_'."""
+    return name.replace("@", "_at_")
 
 
 def label_relevant(chunks: list[dict], keywords: list[str]) -> set[str]:
@@ -86,3 +92,32 @@ def run_generation_benchmark() -> list[dict]:
             "answer_relevancy": scores.get("answer_relevancy"),
         })
     return results
+
+def run_full_benchmark_with_logging():
+    """Run both retrieval and generation benchmarks, logging everything to MLflow."""
+    mlflow.set_tracking_uri("http://localhost:5001")
+    mlflow.set_experiment("ai-research-intelligence-system")
+
+    run_name = f"benchmark_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
+    with mlflow.start_run(run_name=run_name):
+        retrieval_results = run_benchmark()
+
+        for k, v in retrieval_results["naive"].items():
+            mlflow.log_metric(f"naive_{sanitize_metric_name(k)}", v)
+        for k, v in retrieval_results["advanced"].items():
+            mlflow.log_metric(f"advanced_{sanitize_metric_name(k)}", v)
+
+        generation_results = run_generation_benchmark()
+        for i, r in enumerate(generation_results):
+            mlflow.log_metric(f"q{i}_faithfulness", r["faithfulness"] or 0)
+            mlflow.log_metric(f"q{i}_context_precision", r["context_precision"] or 0)
+            mlflow.log_metric(f"q{i}_answer_relevancy", r["answer_relevancy"] or 0)
+
+        avg_faithfulness = sum(r["faithfulness"] or 0 for r in generation_results) / len(generation_results)
+        avg_context_precision = sum(r["context_precision"] or 0 for r in generation_results) / len(generation_results)
+        avg_answer_relevancy = sum(r["answer_relevancy"] or 0 for r in generation_results) / len(generation_results)
+        mlflow.log_metric("avg_faithfulness", avg_faithfulness)
+        mlflow.log_metric("avg_context_precision", avg_context_precision)
+        mlflow.log_metric("avg_answer_relevancy", avg_answer_relevancy)
+
+    return retrieval_results, generation_results

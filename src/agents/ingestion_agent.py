@@ -18,6 +18,7 @@ async def ingestion_agent(state: ResearchState) -> ResearchState:
             content=doc["content"],
             content_format=doc["format"],
             source_url=doc["url"],
+            use_hierarchical=state.get("use_hierarchical_chunking", True),
         )
         result = store_chunks(chunks)
         total_parents += result["parent_chunks_stored"]

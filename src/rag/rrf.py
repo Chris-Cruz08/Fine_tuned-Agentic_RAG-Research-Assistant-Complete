@@ -1,3 +1,6 @@
+from langsmith import traceable
+
+@traceable(name="reciprocal_rank_fusion", run_type="tool")
 def reciprocal_rank_fusion(ranked_lists: list[list[dict]], k: int = 60) -> list[dict]:
     """
     Merge multiple ranked lists of chunks into one, using Reciprocal Rank Fusion.

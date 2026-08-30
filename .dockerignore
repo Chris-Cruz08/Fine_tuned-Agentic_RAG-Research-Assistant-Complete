@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.git/
+reports/*.md
+reports/*.pdf
+raw_documents/
+qdrant_storage/
+mlflow.db
+mlruns/
+.env

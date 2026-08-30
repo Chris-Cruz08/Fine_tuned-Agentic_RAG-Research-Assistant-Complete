@@ -7,7 +7,7 @@ def stable_id(text: str) -> int:
     return int(hashlib.md5(text.encode()).hexdigest()[:16], 16) % (2**63)
 
 
-def chunk_document(content: str, content_format: str, source_url: str) -> list[dict]:
+def chunk_document(content: str, content_format: str, source_url: str, use_hierarchical: bool = True) -> list[dict]:
     """Create hierarchical parent/child chunks from a document.
 
     Parent chunks: 1500 chars, give context.
@@ -19,6 +19,22 @@ def chunk_document(content: str, content_format: str, source_url: str) -> list[d
     else:
         parent_splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=150)
         child_splitter = RecursiveCharacterTextSplitter(chunk_size=400, chunk_overlap=50)
+
+    if not use_hierarchical:
+        # Flat chunking: treat everything as single-level "child" chunks (400 chars), no parent linking
+        flat_chunks = child_splitter.split_text(content)
+        return [
+            {
+                "id": f"{source_url}::flat::{idx}",
+                "text": text,
+                "level": "child",
+                "parent_id": None,
+                "chunk_index": idx,
+                "source_url": source_url,
+                "format": content_format,
+            }
+            for idx, text in enumerate(flat_chunks)
+        ]
 
     parent_chunks = parent_splitter.split_text(content)
 
