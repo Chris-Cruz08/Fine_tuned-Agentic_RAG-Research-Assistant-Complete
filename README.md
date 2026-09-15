@@ -236,7 +236,7 @@ docker run --rm --gpus all -p 8501:8501 --env-file .env ai-research-intelligence
 ## Screenshots
 
 *Streamlit UI - pipeline input and live agent progress:*
-`![gradio fine tune.png](../../Pictures/gradio%20fine%20tune.png)[placeholder - add screenshot]`
+`https://github.com/Chris-Cruz08/Fine_tuned-Agentic_RAG-Research-Assistant-Complete/blob/4aba65988c5182673993ad3fd0b4995ccb36a5ba/images/sc1.png`
 
 *Streamlit UI - RAG answers and evaluation tabs:*
 `[placeholder - add screenshot]`
