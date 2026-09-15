@@ -229,7 +229,7 @@ uv run python test_benchmark.py
 docker build -t ai-research-intelligence-system .
 docker run --rm --gpus all -p 8501:8501 --env-file .env ai-research-intelligence-system
 ```
-> **Known issue:** the container currently fails to start due to a chain of Linux-specific dependency conflicts in the `transformers`/`torch`/`torchvision` stack. Root-caused through several iterations: (1) `transformers`' newer FP8/DeepGEMM/MoE integrations trigger a `torch._dynamo` duplicate-registration bug on Linux that never surfaces on Windows; (2) pinning `transformers` down to avoid it hits a `huggingface-hub` version floor conflict with other dependencies; (3) manually patching or reinstalling `torch` inside the image breaks `torchvision`'s binary compatibility; (4) `uv run`'s automatic re-sync at container start was also silently undoing build-time fixes, which took real effort to diagnose. Each root cause was real and reproducible - this is a genuine current fragility in the `transformers`/`torch` Linux dependency graph, not a project design flaw. Deferred as future work; see below.
+> **Known issue:** the container currently fails to start due to a chain of Linux-specific dependency conflicts in the `transformers`/`torch`/`torchvision` stack. Root-caused through several iterations: (1) `transformers`' newer FP8/DeepGEMM/MoE integrations trigger a `torch._dynamo` duplicate-registration bug on Linux that never surfaces on Windows; (2) pinning `transformers` down to avoid it hits a `huggingface-hub` version floor conflict with other dependencies; (3) manually patching or reinstalling `torch` inside the image breaks `torchvision`'s binary compatibility; (4) `uv run`'s automatic re-sync at container start was also silently undoing build-time fixes, which took real effort to diagnose. Each root cause was real and reproducible - this is a genuine current fragility in the `transformers`/`torch` Linux dependency graph, not a project design flaw. Deferred as future work, but still tryna figure it out, see below.
 
 ---
 
@@ -245,7 +245,7 @@ docker run --rm --gpus all -p 8501:8501 --env-file .env ai-research-intelligence
 ![](https://github.com/Chris-Cruz08/Fine_tuned-Agentic_RAG-Research-Assistant-Complete/blob/929239af61e9e3ee599a1b30b417e8b1f74eb274/images/sc3.png)
 ![](https://github.com/Chris-Cruz08/Fine_tuned-Agentic_RAG-Research-Assistant-Complete/blob/929239af61e9e3ee599a1b30b417e8b1f74eb274/images/sc3.1.png)
 
-*MLflow - naive vs. advanced retrieval comparison:*
+*MLflow - advanced metrics:*
 ![](https://github.com/Chris-Cruz08/Fine_tuned-Agentic_RAG-Research-Assistant-Complete/blob/929239af61e9e3ee599a1b30b417e8b1f74eb274/images/sc4.png)
 
 ---
@@ -253,7 +253,7 @@ docker run --rm --gpus all -p 8501:8501 --env-file .env ai-research-intelligence
 ## Limitations and Future Directions
 
 - **Repeated-list generation failure**: on at least one tested question, the model's answer degenerated into the same list of items repeated multiple times, likely due to greedy decoding (`do_sample=False`, used for reproducible benchmarking) on a longer generation. A `repetition_penalty` parameter would likely fix this and is a planned tune.
-- **Fine-tuned model's terseness bias**: the model tends toward short, factual answers even when explicitly prompted for more detail - likely inherited from concise Q&A pairs in the fine-tuning dataset. This occasionally under-utilizes available context (visible in the Context Precision = 0.0 result above). Worth revisiting with more varied-length training examples in Part 1.
+- **Fine-tuned model's terseness bias**: the model tends toward short, factual answers even when explicitly prompted for more detail - likely inherited from concise Q&A pairs in the fine-tuning dataset. This occasionally under-utilizes available context (visible in the Context Precision = 0.0 result above). Worth revisiting with more varied-length training examples in Part 1 which was the fine tuning the RAG brain.
 - **Hosted judge non-determinism**: Groq's `gpt-oss-120b`, even at `temperature=0`, doesn't guarantee fully deterministic scoring across runs (a known characteristic of batched inference on most hosted LLM APIs, including OpenAI). Generation metric numbers above are representative, not exact-reproducible to the decimal.
 - **Retrieval metrics require a hand-built benchmark**: MRR/nDCG/Precision/Recall can't be computed on arbitrary live questions without ground-truth relevance labels. A future version could use LLM-as-judge relevance labeling to generate a larger, less manually-curated benchmark set automatically.
 - **Docker + Linux triton/dynamo bug**: documented above; needs one more round of debugging (likely an exact `transformers` version pin) before the containerized deployment path is fully solid.
