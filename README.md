@@ -236,16 +236,17 @@ docker run --rm --gpus all -p 8501:8501 --env-file .env ai-research-intelligence
 ## Screenshots
 
 *Streamlit UI - pipeline input and live agent progress:*
-![screenshot 1](https://github.com/Chris-Cruz08/Fine_tuned-Agentic_RAG-Research-Assistant-Complete/blob/4aba65988c5182673993ad3fd0b4995ccb36a5ba/images/sc1.png)
+![screenshot 1](https://github.com/Chris-Cruz08/Fine_tuned-Agentic_RAG-Research-Assistant-Complete/blob/929239af61e9e3ee599a1b30b417e8b1f74eb274/images/sc2.png)
 
 *Streamlit UI - RAG answers and evaluation tabs:*
-`[placeholder - add screenshot]`
+![screenshot 2](https://github.com/Chris-Cruz08/Fine_tuned-Agentic_RAG-Research-Assistant-Complete/blob/929239af61e9e3ee599a1b30b417e8b1f74eb274/images/sc2.1.png)
 
 *LangSmith trace - full nested pipeline (rewrite → expand → retrieve → RRF → rerank → generate):*
-`[placeholder - add screenshot]`
+![](https://github.com/Chris-Cruz08/Fine_tuned-Agentic_RAG-Research-Assistant-Complete/blob/929239af61e9e3ee599a1b30b417e8b1f74eb274/images/sc3.png)
+![](https://github.com/Chris-Cruz08/Fine_tuned-Agentic_RAG-Research-Assistant-Complete/blob/929239af61e9e3ee599a1b30b417e8b1f74eb274/images/sc3.1.png)
 
 *MLflow - naive vs. advanced retrieval comparison:*
-`[placeholder - add screenshot]`
+![](https://github.com/Chris-Cruz08/Fine_tuned-Agentic_RAG-Research-Assistant-Complete/blob/929239af61e9e3ee599a1b30b417e8b1f74eb274/images/sc4.png)
 
 ---
 
